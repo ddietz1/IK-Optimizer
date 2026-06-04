@@ -154,8 +154,6 @@ MODEL_PATH = "mujoco_menagerie/franka_emika_panda/panda.xml"
 model = mujoco.MjModel.from_xml_path(MODEL_PATH)
 data = mujoco.MjData(model)
 
-# for i in range(model.nsite):
-#     print(i, model.site(i).name)
 ee_site = model.site("ee_site").id
 dataset = []
 
@@ -235,7 +233,7 @@ class RobotIKDataset(Dataset):
         return {
             "q_init": q_init.float(),
             "pose": pose.float(),
-            "q_soln": torch.tensor(sample["q_soln"]).float() # Target stays in radians!
+            "q_soln": torch.tensor(sample["q_soln"]).float()
         }
 
 # get data stats(mean and std)

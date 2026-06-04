@@ -100,23 +100,23 @@ def torch_fk_in_space(M, Slist, theta_batch):
 
     for i in range(num_joints):
         S = Slist[:, i]
-        theta = theta_batch[:, i].view(-1, 1, 1) # [Batch, 1, 1]
+        theta = theta_batch[:, i].view(-1, 1, 1)
         
-        # Build se(3) matrix [Batch, 4, 4]
+        # Build se3 matrix
         omg_mat = skew_symmetric_batch(S[:3].repeat(batch_size, 1))
         
-        # Construct the screw matrix [4, 4] for the whole batch
+        # Construct the screw matrix
         se3_mat = torch.zeros((batch_size, 4, 4), device=device)
         se3_mat[:, :3, :3] = omg_mat
         se3_mat[:, :3, 3] = S[3:].repeat(batch_size, 1)
         
-        # Matrix exponential: exp([S]*theta)
+        # Matrix exponential
         exp_S_theta = torch.matrix_exp(se3_mat * theta)
         
         # Chain the transformations
         T = torch.bmm(T, exp_S_theta)
 
-    # Final multiplication by home matrix M (broadcasted)
+    # Final multiplication by home matrix M
     return torch.matmul(T, M.to(device))
 
 def predict_ik(target_pos_world: np.ndarray, q_init: np.ndarray, stats) -> np.ndarray:
@@ -125,10 +125,10 @@ def predict_ik(target_pos_world: np.ndarray, q_init: np.ndarray, stats) -> np.nd
     pose_norm  = (torch.tensor(target_pos_world, dtype=torch.float32) - stats['p_mean']) / (stats['p_std'] + 1e-8)
     q_norm     = (torch.tensor(q_init,           dtype=torch.float32) - stats['q_mean']) / (stats['q_std'] + 1e-8)
 
-    inp = torch.cat([pose_norm, q_norm]).unsqueeze(0)   # [1, 10]
+    inp = torch.cat([pose_norm, q_norm]).unsqueeze(0)
 
     with torch.no_grad():
-        q_pred = net(inp).squeeze(0).numpy()            # [7]
+        q_pred = net(inp).squeeze(0).numpy()
 
     return q_pred
 
@@ -171,8 +171,6 @@ def sample_joint_angles(N=1000):
             joint = np.random.uniform(joint_tolerances[j][0], joint_tolerances[j][1])
             joint_vec.append(joint)
         vectors_arr.append(joint_vec)
-    #     print(joint_vec)
-    # print(vectors_arr)
 
     return vectors_arr
 
@@ -296,11 +294,8 @@ class IKNET(nn.Module):
 
     def forward(self, x):
         x = self.net(x)
-
-        # Map (-∞,+∞) → (0,1)
         x = torch.sigmoid(x)
 
-        # Map (0,1) → [q_min,q_max]
         return self.q_min + x * (self.q_max - self.q_min)
 
 MODEL_PATH = "mujoco_menagerie/franka_emika_panda/panda.xml"
@@ -344,7 +339,7 @@ for i in range(7):
     body_xpos     = data_mj.xpos[body_id]
     q_pos = body_xpos + body_xmat @ jnt_pos_local
 
-    # screw axis linear part: v = -omega x q
+    # screw axis
     v = -np.cross(omega, q_pos)
 
     Slist_correct[:3, i] = omega
@@ -393,7 +388,6 @@ q_mean, q_std = all_q.float().mean(dim=0), all_q.float().std(dim=0)
 p_mean, p_std = all_pose.float().mean(dim=0), all_pose.float().std(dim=0)
 stats = {'q_mean': q_mean, 'q_std': q_std, 'p_mean': p_mean, 'p_std': p_std}
 
-# validate_slist(model_mj, data_mj, ee_site, S_tensor_correct, M_tensor_correct)
 test_random(stats, 5, 3)
 
 # Test inference time

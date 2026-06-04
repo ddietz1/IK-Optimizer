@@ -154,8 +154,6 @@ MODEL_PATH = "mujoco_menagerie/franka_emika_panda/panda.xml"
 model = mujoco.MjModel.from_xml_path(MODEL_PATH)
 data = mujoco.MjData(model)
 
-# for i in range(model.nsite):
-#     print(i, model.site(i).name)
 ee_site = model.site("ee_site").id
 dataset = []
 
@@ -163,7 +161,6 @@ dataset = []
 for N in range(num_data_points):
 
     # set initial joint config
-
     if not N % 1000:
         print(f"Another 1000 data points!")
 
@@ -191,7 +188,7 @@ for N in range(num_data_points):
     ik_error = np.linalg.norm(np.array(pose[:3]) - final_pos)
 
     if ik_error > 1e-3:
-        continue  # skip this sample
+        continue
 
     collisions = check_collision(model, data)
 

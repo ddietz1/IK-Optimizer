@@ -16,17 +16,6 @@ def plot_loss(history):
     plt.legend()
     plt.grid(True)
 
-    # error in cm
-    # train_cm = [torch.sqrt(torch.tensor(l)).item() * 100 for l in history["train_loss"]]
-    # val_cm   = [torch.sqrt(torch.tensor(l)).item() * 100 for l in history["val_loss"]]
-    # ax2.plot(history["iter"], train_cm, label="Train")
-    # ax2.plot(history["iter"], val_cm,   label="Val")
-    # ax2.set_xlabel("Iteration")
-    # ax2.set_ylabel("RMSE (cm)")
-    # ax2.set_title("Position Error")
-    # ax2.legend()
-    # ax2.grid(True)
-
     plt.tight_layout()
     plt.savefig("loss_curve_regularization.png", dpi=150)
     plt.show()
