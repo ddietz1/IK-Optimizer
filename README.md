@@ -32,6 +32,11 @@ python3 trainer.py
 python3 Testing.py
 ```
 
+### Full Pipeline
+```bash
+python3 full_pipeline.py
+```
+
 ## Requirements
 - Python 3.12
 - NVIDIA GPU recommended (training took ~15 hours on an RTX 6000 Ada)
